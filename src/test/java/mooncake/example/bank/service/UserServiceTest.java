@@ -2,10 +2,9 @@ package mooncake.example.bank.service;
 
 import mooncake.example.bank.config.dummy.DummyObjectCreator;
 import mooncake.example.bank.domain.user.User;
-import mooncake.example.bank.domain.user.UserEnum;
 import mooncake.example.bank.domain.user.UserRepository;
-import mooncake.example.bank.dto.request.UserJoinReqDto;
-import mooncake.example.bank.dto.response.UserJoinRespDto;
+import mooncake.example.bank.dto.request.UserReqDto;
+import mooncake.example.bank.dto.response.UserRespDto;
 import mooncake.example.bank.handler.exception.CustomApiException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +14,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +45,7 @@ public class UserServiceTest extends DummyObjectCreator {
     void test_회원가입() throws Exception {
 
         // given (보통 들어가는 Param)
-        UserJoinReqDto requestDto = new UserJoinReqDto(
+        UserReqDto.UserJoinReqDto requestDto = new UserReqDto.UserJoinReqDto(
                 "회원이름", "1234", "회원이름@hello.com", "ssar"
         );
 
@@ -60,7 +58,7 @@ public class UserServiceTest extends DummyObjectCreator {
         when(userRepository.save(any())).thenReturn(ssar);
 
         //when
-        UserJoinRespDto responseDto = userService.save(requestDto);
+        UserRespDto.UserJoinRespDto responseDto = userService.save(requestDto);
 
         //then
         assertThat(responseDto.getId()).isEqualTo(1L);
@@ -73,7 +71,7 @@ public class UserServiceTest extends DummyObjectCreator {
     void test_회원가입_실패() {
 
         //given
-        UserJoinReqDto requestDto = new UserJoinReqDto(
+        UserReqDto.UserJoinReqDto requestDto = new UserReqDto.UserJoinReqDto(
                 "회원이름", "1234", "hello@a.com", "김상수"
         );
 

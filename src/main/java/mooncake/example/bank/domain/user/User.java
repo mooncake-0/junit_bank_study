@@ -57,4 +57,12 @@ public class User {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+    /*
+     TEST 용도
+     */
+
+    public void setRole(UserEnum role) {
+        this.role = role;
+    }
 }

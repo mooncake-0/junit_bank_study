@@ -2,8 +2,8 @@ package mooncake.example.bank.web;
 
 import lombok.RequiredArgsConstructor;
 import mooncake.example.bank.dto.ResponseDto;
-import mooncake.example.bank.dto.request.UserJoinReqDto;
-import mooncake.example.bank.dto.response.UserJoinRespDto;
+import mooncake.example.bank.dto.request.UserReqDto;
+import mooncake.example.bank.dto.response.UserRespDto;
 import mooncake.example.bank.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +31,7 @@ public class UserController {
      Validation 사용하기 - @Valid, BindingResult 를 통해 결과 받기
      */
     @PostMapping("/join")
-    public ResponseEntity<ResponseDto<?>> join(@RequestBody @Valid UserJoinReqDto requestDto, BindingResult bindingResult) {
+    public ResponseEntity<ResponseDto<?>> join(@RequestBody @Valid UserReqDto.UserJoinReqDto requestDto, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
 
@@ -45,7 +45,7 @@ public class UserController {
             return new ResponseEntity<>(new ResponseDto<>(-1, "유효성 검사 실패 ", errMap), HttpStatus.OK);
         }
 
-        UserJoinRespDto responseDto = userService.save(requestDto);
+        UserRespDto.UserJoinRespDto responseDto = userService.save(requestDto);
         return new ResponseEntity<>(new ResponseDto<>(1, "회원가입성공", responseDto), HttpStatus.CREATED); //201 - 뭔가 만들어짐
 
     }
