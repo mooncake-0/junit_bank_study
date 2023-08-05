@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mooncake.example.bank.domain.user.User;
+import mooncake.example.bank.handler.exception.CustomApiException;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -52,5 +53,12 @@ public class Account {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.user = user;
+    }
+
+    // DDD 로 인해, 여기서 체킹을 해보자
+    public void checkOwner(Long checkingId) {
+        if (this.getId() != checkingId) {
+            throw new CustomApiException("계좌 소유자가 아닙니다");
+        }
     }
 }

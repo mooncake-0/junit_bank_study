@@ -3,10 +3,12 @@ package mooncake.example.bank.config.dummy;
 import mooncake.example.bank.domain.account.Account;
 import mooncake.example.bank.domain.user.User;
 import mooncake.example.bank.domain.user.UserEnum;
+import mooncake.example.bank.dto.request.AccountReqDto;
 import mooncake.example.bank.dto.request.UserReqDto;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import static mooncake.example.bank.dto.request.AccountReqDto.*;
 import static mooncake.example.bank.dto.response.UserRespDto.*;
 import static mooncake.example.bank.dto.request.UserReqDto.*;
 
@@ -35,6 +37,14 @@ public class DummyObjectCreator {
 
     protected UserJoinReqDto newMockRequestDto(String username, String password, String email, String fullName) {
         return new UserJoinReqDto(username, password, email, fullName);
+    }
+
+    protected AccountSaveReqDto newMockAccountSaveReqDto(Long number, Long password) {
+        AccountSaveReqDto accountSaveReqDto = new AccountSaveReqDto();
+        accountSaveReqDto.setNumber(number);
+        accountSaveReqDto.setPassword(password);
+
+        return accountSaveReqDto;
     }
 
     protected User newMockUser(Long id, String username, String fullName) {
