@@ -57,8 +57,12 @@ public class Account {
 
     // DDD 로 인해, 여기서 체킹을 해보자
     public void checkOwner(Long checkingId) {
-        if (this.getId() != checkingId) {
+        if (this.getUser().getId() != checkingId) {
             throw new CustomApiException("계좌 소유자가 아닙니다");
         }
+    }
+
+    public void deposit(Long amount) {
+        this.balance += amount;
     }
 }

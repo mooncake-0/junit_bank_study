@@ -39,7 +39,7 @@ public class Transaction {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private TransactionEnum gubun;
+    private TransactionEnum transactionType;
 
 
     // 계좌가 사라져도 로그는 남아야 한다
@@ -57,14 +57,14 @@ public class Transaction {
 
 
     @Builder
-    public Transaction(Long id, Account withdrawAccount, Account depositAccount, Long amount, Long withdrawAccountBalance, Long depositAccountBalance, TransactionEnum gubun, String sender, String receiver, String tel, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Transaction(Long id, Account withdrawAccount, Account depositAccount, Long amount, Long withdrawAccountBalance, Long depositAccountBalance, TransactionEnum transactionType, String sender, String receiver, String tel, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.withdrawAccount = withdrawAccount;
         this.depositAccount = depositAccount;
         this.amount = amount;
         this.withdrawAccountBalance = withdrawAccountBalance;
         this.depositAccountBalance = depositAccountBalance;
-        this.gubun = gubun;
+        this.transactionType = transactionType;
         this.sender = sender;
         this.receiver = receiver;
         this.tel = tel;
