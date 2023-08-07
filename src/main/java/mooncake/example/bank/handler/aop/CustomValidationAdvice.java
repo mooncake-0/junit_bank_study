@@ -3,7 +3,9 @@ package mooncake.example.bank.handler.aop;
 import mooncake.example.bank.handler.exception.CustomValidationException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -13,6 +15,9 @@ import java.util.Map;
 /*
  AOP 를 통해 Controller 의 역할 분리
  */
+
+@Component
+@Aspect
 public class CustomValidationAdvice {
     /*
      Body 데이터가 있을 시 사용되는 Validation AOP

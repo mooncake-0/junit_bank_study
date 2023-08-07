@@ -55,4 +55,13 @@ public class AccountController {
         accountService.계좌삭제(number, loginUser.getUser().getId());
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 삭제 완료", null), HttpStatus.OK);
     }
+
+
+    @PostMapping("/account/deposit")
+    public ResponseEntity<?> depositAccount(@RequestBody @Valid AccountService.AccountDepositReqDto requestDto, BindingResult bindingResult) {
+        AccountService.AccountDepositRespDto responseDto = accountService.계좌입금(requestDto);
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료 ", responseDto), HttpStatus.CREATED); //TX 생성
+
+    }
 }
+

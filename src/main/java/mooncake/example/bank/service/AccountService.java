@@ -136,6 +136,7 @@ public class AccountService {
         @NotEmpty
         @Pattern(regexp = "DEPOSIT") // 일반식 표현은.. 지피티랑 해
         private String transactionType; // Deposit
+
         @NotEmpty
         @Pattern(regexp = "^[0-9]{3}[0-9]{4}[0-9]{4}")
         private String tel;

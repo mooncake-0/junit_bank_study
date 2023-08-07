@@ -12,7 +12,7 @@ public class TransactionRespDto {
     @Setter
     public static class TransactionDto {
         private Long id;
-        private TransactionEnum transactionType;
+        private String transactionType;
         private String sender;
         private String receiver;
 
@@ -25,7 +25,7 @@ public class TransactionRespDto {
 
         public TransactionDto(Transaction transaction) {
             this.id = transaction.getId();
-            this.transactionType = transaction.getTransactionType();
+            this.transactionType = transaction.getTransactionType().getValue();
             this.sender = transaction.getSender();
             this.receiver = transaction.getReceiver();
             this.amount = transaction.getAmount();
