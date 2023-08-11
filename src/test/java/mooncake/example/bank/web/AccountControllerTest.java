@@ -8,6 +8,7 @@ import mooncake.example.bank.config.security.jwt.JwtParams;
 import mooncake.example.bank.config.security.jwt.JwtProcessor;
 import mooncake.example.bank.domain.account.Account;
 import mooncake.example.bank.domain.account.AccountRepository;
+import mooncake.example.bank.domain.transaction.TransactionEnum;
 import mooncake.example.bank.domain.user.User;
 import mooncake.example.bank.domain.user.UserEnum;
 import mooncake.example.bank.domain.user.UserRepository;
@@ -103,6 +104,17 @@ public class AccountControllerTest extends DummyObjectCreator {
 
         accountRepository.save(mooncakeAccount);
 
+        Account anotherAccount = Account.builder()
+                .number(2222L)
+                .password(1234L)
+                .balance(1000L)
+                .user(another)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        accountRepository.save(anotherAccount);
+
         // QUERY 나가는 모습을 정확히 확인하기 위함 (LAZY LOADING JOIN 같은거)
         em.clear();
 
@@ -185,4 +197,94 @@ public class AccountControllerTest extends DummyObjectCreator {
 
 
     }
+
+    /*
+     Controller Test 는 AOP 까지 거칠 수 있기 때문에 중요한 Test 임
+     TODO:: 근데 이정도 했을 때 솔직히 responseBody 가 왜 형성되는지 잘 모르겠음 --> 이거 파악해야한다
+     */
+    @Test
+    void when_anonymous_request_deposit_with_right_info_should_return_response() throws Exception {
+        // given
+        AccountDepositReqDto requestDto = new AccountDepositReqDto();
+        requestDto.setNumber(1111L);
+        requestDto.setTel("01012345678");
+        requestDto.setTransactionType(TransactionEnum.DEPOSIT.toString());
+        requestDto.setAmount(100L);
+        String requestBody = om.writeValueAsString(requestDto);
+        System.out.println(requestBody);
+
+
+        // when
+        ResultActions resultActions = mvc.perform(post("/api/account/deposit").content(requestBody).contentType(MediaType.APPLICATION_JSON));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println(responseBody);
+
+        // then
+        resultActions.andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithUserDetails(value = "mooncake", setupBefore = TestExecutionEvent.TEST_EXECUTION) // BE 다음, 해당 메소드 직전에 Security 주입을 실행
+    void when_user_withdraw_with_right_request_should_return_response() throws Exception {
+        //g
+        AccountWithdrawReqDto requestDto = new AccountWithdrawReqDto();
+        requestDto.setNumber(1111L);
+        requestDto.setPassword(1234L);
+        requestDto.setAmount(100L);
+        requestDto.setTranasctionType(TransactionEnum.WITHDRAW.toString());
+
+        String requestBody = om.writeValueAsString(requestDto);
+
+        //w
+        ResultActions resultActions = mvc.perform(post("/api/s/account/withdraw").content(requestBody).contentType(MediaType.APPLICATION_JSON));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+
+        //t
+        resultActions.andExpect(status().isOk());
+
+    }
+
+    @Test
+    @WithUserDetails(value = "mooncake", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    void when_user_transfer_with_right_request_should_return_response() throws Exception {
+
+        // given (mooncake 가 another 의 계좌에게 100원을 입금하려 한다)
+        AccountTransferReqDto requestDto = new AccountTransferReqDto();
+        requestDto.setWithDrawNumber(1111L);
+        requestDto.setDepositNumber(2222L);
+        requestDto.setAmount(100L);
+        requestDto.setTransactionType(TransactionEnum.TRANSFER.toString());
+        requestDto.setWithDrawPassword(1234L);
+        String requestBody = om.writeValueAsString(requestDto);
+
+
+        // when
+        ResultActions resultActions = mvc.perform(post("/api/s/account/transfer").content(requestBody).contentType(MediaType.APPLICATION_JSON));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("responseBody = " + responseBody);
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+    }
+
+    @Test
+    @WithUserDetails(value = "mooncake", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    void when_account_detail_with_right_request_should_return_response() throws Exception {
+
+        // given
+        Long number = 1111L;
+        String page = "0";
+
+        // when
+        ResultActions resultActions = mvc.perform(get("/api/s/account/" + number)
+                .param("page", page));
+        String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+        System.out.println("responseBody = " + responseBody);
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+    }
+
 }

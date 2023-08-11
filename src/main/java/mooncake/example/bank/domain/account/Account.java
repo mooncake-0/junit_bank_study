@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Table(name = "account_tb")
 @Entity
@@ -64,5 +65,18 @@ public class Account {
 
     public void deposit(Long amount) {
         this.balance += amount;
+    }
+
+    public void checkPassword(Long checkingPw) {
+        if (!Objects.equals(checkingPw, this.password)) {
+            throw new CustomApiException("비밀번호가 일치하지 않습니다");
+        }
+    }
+
+    public void withdraw(Long amount) {
+        if (this.balance < amount) {
+            throw new CustomApiException("잔액이 부족합니다");
+        }
+        this.balance -= amount;
     }
 }

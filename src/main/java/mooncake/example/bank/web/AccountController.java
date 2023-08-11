@@ -58,10 +58,35 @@ public class AccountController {
 
 
     @PostMapping("/account/deposit")
-    public ResponseEntity<?> depositAccount(@RequestBody @Valid AccountService.AccountDepositReqDto requestDto, BindingResult bindingResult) {
-        AccountService.AccountDepositRespDto responseDto = accountService.계좌입금(requestDto);
+    public ResponseEntity<?> depositAccount(@RequestBody @Valid AccountDepositReqDto requestDto, BindingResult bindingResult) {
+        AccountDepositRespDto responseDto = accountService.계좌입금(requestDto);
         return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료 ", responseDto), HttpStatus.CREATED); //TX 생성
-
     }
+
+    // 출금 분석
+    @PostMapping("/s/account/withdraw")
+    public ResponseEntity<?> withdrawAccount(@RequestBody @Valid AccountWithdrawReqDto requestDto, BindingResult br, @AuthenticationPrincipal LoginUser loginUser) {
+        AccountWithdrawRespDto respDto = accountService.계좌출금(requestDto, loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 출금 완료", respDto), HttpStatus.OK);
+    }
+
+    // Transaction 객체 생성 --> CREATED 이 맞는지??
+    @PostMapping("/s/account/transfer")
+    public ResponseEntity<?> transferAccount(@RequestBody @Valid AccountTransferReqDto requestDto, BindingResult br, @AuthenticationPrincipal LoginUser loginUser) {
+        AccountTransferRespDto respDto = accountService.계좌이체(requestDto, loginUser.getUser().getId());
+        return new ResponseEntity<>(new ResponseDto<>(1, "계좌 이체 성공", respDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/s/account/{number}")
+    public ResponseEntity<?> viewAccountDetail(
+            @PathVariable("number") Long number,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @AuthenticationPrincipal LoginUser loginUser
+    ){
+
+        AccountDetailRespDto responseDto = accountService.계좌상세보기(number, loginUser.getUser().getId(), page);
+        return ResponseEntity.ok().body(new ResponseDto<>(1, "계좌 상세보기 성공", responseDto));
+    }
+
 }
 

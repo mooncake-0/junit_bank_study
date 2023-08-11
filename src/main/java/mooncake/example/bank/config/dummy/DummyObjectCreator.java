@@ -1,6 +1,8 @@
 package mooncake.example.bank.config.dummy;
 
 import mooncake.example.bank.domain.account.Account;
+import mooncake.example.bank.domain.transaction.Transaction;
+import mooncake.example.bank.domain.transaction.TransactionEnum;
 import mooncake.example.bank.domain.user.User;
 import mooncake.example.bank.domain.user.UserEnum;
 import mooncake.example.bank.dto.request.AccountReqDto;
@@ -16,6 +18,21 @@ import static mooncake.example.bank.dto.request.UserReqDto.*;
  MEMO :: TEST - MOCKING 환경 용 MOCKING 객체들은 ID 까지 직접 넣어줘야 ID도 Verify 가 가능하다
  */
 public class DummyObjectCreator {
+
+    protected Transaction newDepositMockTransaction(Long id, Account account, AccountDepositReqDto requestDto) {
+        return Transaction.builder()
+                .id(id)
+                .depositAccount(account)
+                .withdrawAccount(null) // 입금은 - 되는 사람 정보는 넣지 않는다 (정확한 이체만 등재)
+                .depositAccountBalance(account.getBalance())
+                .withdrawAccountBalance(null) // 그래서 이것도 없다
+                .amount(requestDto.getAmount())
+                .transactionType(TransactionEnum.DEPOSIT)
+                .sender("ATM")
+                .receiver(requestDto.getNumber() + "")
+                .tel(requestDto.getTel())
+                .build();
+    }
 
     protected Account newMockAccount(Long id, Long number, Long password, User user) {
         Account mockAccount = Account.builder()

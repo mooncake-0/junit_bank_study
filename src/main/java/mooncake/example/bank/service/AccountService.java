@@ -122,41 +122,101 @@ public class AccountService {
 
     }
 
-    @Getter
-    @Setter
-    public static class AccountDepositReqDto { // 누구의 계좌에서 얼마만큼의 금액 중 무슨 Type 의 일을 발생시킬 것이냐
 
-        @NotNull
-        @Digits(integer = 4, fraction = 4)
-        private Long number;
+    @Transactional
+    public AccountWithdrawRespDto 계좌출금(AccountWithdrawReqDto requestDto, Long requestUserId) {
 
-        @NotNull
-        private Long amount; // 0 원 유효성 검사 여기서 해도 됨. 여기서 하는게 사실 맞음
-
-        @NotEmpty
-        @Pattern(regexp = "DEPOSIT") // 일반식 표현은.. 지피티랑 해
-        private String transactionType; // Deposit
-
-        @NotEmpty
-        @Pattern(regexp = "^[0-9]{3}[0-9]{4}[0-9]{4}")
-        private String tel;
-    }
-
-    @Getter
-    @Setter
-    public static class AccountDepositRespDto{
-
-        private Long id;
-        private Long number;
-        private TransactionDto transactionDto;
-
-        public AccountDepositRespDto(Account account, TransactionDto transactionDto) {
-            this.id = account.getId();
-            this.number = account.getNumber();
-            this.transactionDto = transactionDto;
+        if (requestDto.getAmount() <= 0L) { // 0 원 체크
+            throw new CustomApiException("0원 이하의 금액을 출금할 수 없습니다");
         }
 
+        // 출금 계좌 확인
+        Account accountPs = accountRepository.findByNumber(requestDto.getNumber()).orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다"));
 
+        // 출금 소유자 확인 (요청자와 동일한지)
+        accountPs.checkOwner(requestUserId);
+
+        // 출금 계좌 비번 확인
+        accountPs.checkPassword(requestDto.getPassword());
+
+        // 이제서야 비로소 출금
+        accountPs.withdraw(requestDto.getAmount());
+
+        // 거래내역 남기기
+        Transaction withDrawTx = Transaction.builder()
+                .withdrawAccount(accountPs)
+                .depositAccount(null)
+                .depositAccountBalance(null)
+                .withdrawAccountBalance(accountPs.getBalance())
+                .amount(requestDto.getAmount())
+                .transactionType(TransactionEnum.WITHDRAW)
+                .sender(requestDto.getNumber() + "")
+                .receiver("ATM")
+                .build();
+
+        Transaction txPs = transactionRepository.save(withDrawTx);
+
+        // DTO 응답
+        return new AccountWithdrawRespDto(accountPs, new TransactionDto(withDrawTx));
+
+    }
+
+
+    // 계좌이체 Service 샘플
+    public AccountTransferRespDto 계좌이체(AccountTransferReqDto requestDto, Long userId) {
+
+        // 출금계좌와 입금계좌가 동일하지 않은지도 확인하래
+        if (Objects.equals(requestDto.getDepositNumber(), requestDto.getWithDrawNumber())) {
+            throw new CustomApiException("출금 / 입금 계좌가 같을 수 없습니다");
+        }
+
+        if (requestDto.getAmount() <= 0L) { // 0 원 체크
+            throw new CustomApiException("0원 이하의 금액을 이체할 수 없습니다");
+        }
+
+        // 각 계좌 확인
+        // 출금 계좌 확인
+        Account withdrawAccountPs = accountRepository.findByNumber(requestDto.getWithDrawNumber()).orElseThrow(() -> new CustomApiException("출금 계좌를 찾을 수 없습니다"));
+        withdrawAccountPs.checkOwner(userId);
+        withdrawAccountPs.checkPassword(requestDto.getWithDrawPassword());
+
+        // 출금 계좌 확인
+        Account depositAccountPs = accountRepository.findByNumber(requestDto.getDepositNumber()).orElseThrow(() -> new CustomApiException("입금할 계좌를 찾을 수 없습니다"));
+
+        // 이체 로직 (중요한 Tx 보장 부분)
+        withdrawAccountPs.withdraw(requestDto.getAmount());
+        depositAccountPs.deposit(requestDto.getAmount());
+
+        // 거래내역 남기기
+        Transaction transferTx = Transaction.builder()
+                .withdrawAccount(withdrawAccountPs)
+                .depositAccount(depositAccountPs)
+                .depositAccountBalance(depositAccountPs.getBalance())
+                .withdrawAccountBalance(withdrawAccountPs.getBalance())
+                .amount(requestDto.getAmount())
+                .transactionType(TransactionEnum.TRANSFER)
+                .sender(withdrawAccountPs.getNumber() + "")
+                .receiver(depositAccountPs.getNumber() + "")
+                .build();
+
+        transactionRepository.save(transferTx);
+
+        return new AccountTransferRespDto(withdrawAccountPs, new TransactionDto(transferTx));
+
+    }
+
+    // 계좌의 상세정보, 그리고 최근 이체 내역 까지 모두 전달해준다
+    public AccountDetailRespDto 계좌상세보기(Long number, Long userId, Integer page) {
+        // 구분값 , 페이지 고정
+        String txType = "ALL"; // 조회하려는 계좌의 모든 내역이 필요하기 때문 // 고정값으로 요청을 처리하기 때문
+
+        Account accountPs = accountRepository.findByNumber(number).orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다"));
+
+        accountPs.checkOwner(userId);
+
+        List<Transaction> transactionList = transactionRepository.findTransactionList(accountPs.getId(), TransactionEnum.valueOf(txType), page);
+
+        return new AccountDetailRespDto(accountPs, transactionList);
     }
 
 }
